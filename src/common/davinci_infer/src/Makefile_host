@@ -1,0 +1,41 @@
+#include ./src/path.mk
+TOPDIR     := $(DDK_PATH)
+LOCAL_DIR  := ./src
+INCLUDE_DIR := $(TOPDIR)/include
+
+LOCAL_MODULE_NAME := DavinciInfer
+
+CC_FLAGS := -std=c++11 -g -fstack-protector-all -Wl,-z,relro,-z,now -Wl,-z,noexecstack -fPIC
+
+local_src_files := \
+    $(LOCAL_DIR)/visual_infer_main.cpp \
+    $(LOCAL_DIR)/host/data_recv.cpp \
+    $(LOCAL_DIR)/host/visual_infer_host.cpp \
+    $(LOCAL_DIR)/host/util.cpp \
+    $(LOCAL_DIR)/host/raw_data_host.cpp \
+    $(LOCAL_DIR)/host/raw_data_mutil_input_host.cpp \
+    $(LOCAL_DIR)/device/sample_data.cpp \
+    $(LOCAL_DIR)/config_parser/config_parser.cpp
+
+local_inc_dirs := \
+    $(INCLUDE_DIR)/inc \
+    $(INCLUDE_DIR)/third_party/protobuf/include \
+    $(INCLUDE_DIR)/third_party/cereal/include \
+    $(INCLUDE_DIR)/libc_sec/include \
+    $(LOCAL_DIR) \
+    $(LOCAL_DIR)/inc \
+    $(LOCAL_DIR)/config_parser
+
+local_shared_libs_dirs := \
+    $(TOPDIR)/host/lib
+
+local_shared_libs := \
+        matrix \
+        protobuf \
+        drvhdc_host  \
+        crypto \
+        pthread \
+        mmpa \
+        
+
+include ./src/cc_rule.mk

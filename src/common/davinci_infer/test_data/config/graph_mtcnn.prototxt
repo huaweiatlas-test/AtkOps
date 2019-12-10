@@ -1,0 +1,220 @@
+graphs {
+  graph_id: 100
+  priority: 1
+
+  engines {
+    id: 1000
+    engine_name: "SourceEngine"
+    side: HOST
+    thread_num: 1
+  }
+
+  engines {
+    id: 1001
+    engine_name: "DestEngine"
+    side: HOST
+    thread_num: 1
+  }
+
+  engines {
+    id: 1002
+    engine_name: "JpegdEngine"
+    side: DEVICE
+    so_name: "./libai_engine.so"
+    thread_num: 1
+  }
+
+  engines {
+    id: 1003
+    engine_name: "VpcEngine"
+    side: DEVICE
+    so_name: "./libai_engine.so"
+    thread_num: 1
+    ai_config{
+    items{
+      name:"model_width"
+      value:"224"
+    }
+    items{
+      name:"model_height"
+      value:"224"
+    }
+
+   }
+  }
+
+
+  engines {
+    id: 1005
+    engine_name: "MtcnnInferEngine"
+    side: DEVICE
+    so_name: "./libai_engine.so"
+    thread_num: 1
+    ai_config{
+      items{
+          name: "PNet_908x510"
+          value: "./test_data/model/det1_908x510/device/det1_908x510.om"
+
+          sub_items{
+              name:"model_width"
+              value:"908"
+          }
+          sub_items{
+              name:"model_height"
+              value:"510"
+          }
+          sub_items{
+              name:"scale"
+              value:"0.709"
+          }
+      }
+
+      items{
+          name: "PNet_644x362"
+          value: "./test_data/model/det1_644x362/device/det1_644x362.om"
+
+          sub_items{
+              name:"model_width"
+              value:"644"
+          }
+          sub_items{
+              name:"model_height"
+              value:"362"
+          }
+          sub_items{
+              name:"scale"
+              value:"0.503"
+          }
+      }
+
+      items{
+          name: "PNet_456x256"
+          value: "./test_data/model/det1_456x256/device/det1_456x256.om"
+
+          sub_items{
+              name:"model_width"
+              value:"456"
+          }
+          sub_items{
+              name:"model_height"
+              value:"256"
+          }
+          sub_items{
+              name:"scale"
+              value:"0.356"
+          }
+      }
+
+      items{
+          name: "PNet_324x182"
+          value: "./test_data/model/det1_324x182/device/det1_324x182.om"
+
+          sub_items{
+              name:"model_width"
+              value:"324"
+          }
+          sub_items{
+              name:"model_height"
+              value:"182"
+          }
+          sub_items{
+              name:"scale"
+              value:"0.253"
+          }
+      }
+
+      items{
+          name: "PNet_230x128"
+          value: "./test_data/model/det1_230x128/device/det1_230x128.om"
+
+          sub_items{
+              name:"model_width"
+              value:"230"
+          }
+          sub_items{
+              name:"model_height"
+              value:"128"
+          }
+          sub_items{
+              name:"scale"
+              value:"0.179"
+          }
+      }
+
+      items{
+          name: "PNet_162x92"
+          value: "./test_data/model/det1_162x92/device/det1_162x92.om"
+
+          sub_items{
+              name:"model_width"
+              value:"162"
+          }
+          sub_items{
+              name:"model_height"
+              value:"92"
+          }
+          sub_items{
+              name:"scale"
+              value:"0.127"
+          }
+      }
+
+      items{
+          name: "RNet"
+          value: "./test_data/model/det2/device/det2.om"
+
+          sub_items{
+              name:"model_width"
+              value:"24"
+          }
+          sub_items{
+              name:"model_height"
+              value:"24"
+          }
+          sub_items{
+              name:"scale"
+              value:"-1"
+          }
+      }
+
+      items{
+          name: "ONet"
+          value: "./test_data/model/det3/device/det3.om"
+
+          sub_items{
+              name:"model_width"
+              value:"48"
+          }
+          sub_items{
+              name:"model_height"
+              value:"48"
+          }
+          sub_items{
+              name:"scale"
+              value:"-1"
+          }
+      }
+
+     
+    }
+  }
+
+  connects {
+    src_engine_id: 1000
+    src_port_id: 0
+    target_engine_id: 1002
+    target_port_id: 0
+  }
+  connects {
+    src_engine_id: 1002
+    src_port_id: 0
+    target_engine_id: 1005
+    target_port_id: 0
+  }
+  connects {
+    src_engine_id: 1005
+    src_port_id: 0
+    target_engine_id: 1001
+    target_port_id: 0
+  }
+}

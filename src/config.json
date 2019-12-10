@@ -1,0 +1,41 @@
+
+{
+    "operator_name":               "custom_Upsample",
+    "framework":                   "caffe",
+    "DDK_PATH":                    "/home/mindstudio/tools/che/ddk/ddk",
+    "custom_caffe_proto_file":     "/home/mindstudio/caffe.proto",
+    "same_input_output_shape":     "False",
+    "input_num":                   "2",
+    "weight_num":                  "2",
+    "weight_num_param":            [
+        {
+            "weight_1":            "5",
+            "weight_2":            "3"
+        }
+                                   ],
+    "filter_caffe_param":          ["min_size", "img_w", "img_size", "flip", "max_size"],
+    "tf_op_origin_name":           "BatchMatMul",
+    "tensorflow_param":            [
+        {
+            "param":               "adj_x",
+            "type":                "bool"
+        },
+        {
+            "param":               "adj_y",
+            "type":                "bool"
+        }
+                                   ],
+    "project_path":                "/home/mindstudio",
+    "caffe_operator_type":         "Concat",
+    "pycaffe_path":                "/home/mindstudio/caffe-ssd/pythonn/",
+    "net_prototxt":                "/home/mindstudio/RP2/ATK-Ops-zly/src/common/op_verify_files/caffe_files/EasyTRConcat.prototxt",
+    "net_caffemodel":              "/home/mindstudio/RP2/ATK-Ops-zly/src/common/op_verify_files/caffe_files/EasyTRConcat.caffemodel",
+    "net_pb":                      "/home/mindstudio/yolov3.pb",
+    "operator_path":               "/home/mindstudio/RP2/ATK-Ops/src/custom_batch_matmul/operator/custom_batch_matmul.py",   
+    "plugin_path":                 "/home/mindstudio/director/tools/Auto_Operator/custom_floor/plugin",
+    "single_operator_run_cfg":     {
+            "dtype":                    "float32",
+            "precision_deviation":  	"0.2",
+            "statistical_discrepancy":  "0.2"
+                                    }
+}

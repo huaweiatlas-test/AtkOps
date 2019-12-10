@@ -1,0 +1,1 @@
+DDK_PATH = $DDK_PATH

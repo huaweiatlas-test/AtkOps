@@ -1,0 +1,52 @@
+graphs {
+  graph_id: 100
+  priority: 1
+
+  engines {
+    id: 1000
+    engine_name: "RawDataEngine"
+    side: HOST
+    thread_num: 1
+  }
+
+  engines {
+    id: 1001
+    engine_name: "DestEngine"
+    side: HOST
+    thread_num: 1
+  }
+
+  engines {
+    id: 1005
+    engine_name: "GeneralInferEngine"
+    side: DEVICE
+so_name:"/home/minduser/work/davinci_infer/libai_engine.so"
+    thread_num: 1
+    ai_config{
+      items{
+          name: "model_path"
+value:"/home/minduser/work/davinci_infer/test_data/model/resnet_bgr.om"
+
+          sub_items{
+            name: "batchsize"
+value:"1"
+          }
+      }
+      
+    }
+
+  }
+
+  connects {
+    src_engine_id: 1000
+    src_port_id: 0
+    target_engine_id: 1005
+    target_port_id: 0
+  }
+  connects {
+    src_engine_id: 1005
+    src_port_id: 0
+    target_engine_id: 1001
+    target_port_id: 0
+  }
+}

@@ -1,0 +1,89 @@
+graphs {
+  graph_id: 100
+  priority: 1
+
+  engines {
+    id: 1000
+    engine_name: "SourceEngine"
+    side: HOST
+    thread_num: 1
+  }
+
+  engines {
+    id: 1001
+    engine_name: "DestEngine"
+    side: HOST
+    thread_num: 1
+  }
+
+  engines {
+    id: 1002
+    engine_name: "JpegdEngine"
+    side: DEVICE
+so_name:"/home/minduser/work/davinci_infer/libai_engine.so"
+    thread_num: 1
+  }
+
+  engines {
+    id: 1003
+    engine_name: "VpcEngine"
+    side: DEVICE
+so_name:"/home/minduser/work/davinci_infer/libai_engine.so"
+    thread_num: 1
+    ai_config{
+      items{
+        name:"model_width"
+value:"224"
+      }
+      items{
+        name:"model_height"
+value:"224"
+      }
+   }
+  }
+
+  engines {
+    id: 1005
+    engine_name: "GeneralInferEngine"
+    side: DEVICE
+so_name:"/home/minduser/work/davinci_infer/libai_engine.so"
+    thread_num: 1
+    ai_config{
+      items{
+          name: "model_path"
+value:"/home/minduser/projects/autotestkit_debug/data/outputdata/1_10_resnet_v2_101_frozen_resnet_v2_101/batch_8/omg_result/1_10_resnet_v2_101_frozen_resnet_v2_101_8_1_3_T21_B880.om"
+
+          sub_items{
+            name: "batchsize"
+value:"8"
+          }
+      }
+      
+    }
+  }
+
+  connects {
+    src_engine_id: 1000
+    src_port_id: 0
+    target_engine_id: 1002
+    target_port_id: 0
+  }
+  connects {
+    src_engine_id: 1002
+    src_port_id: 0
+    target_engine_id: 1003
+    target_port_id: 0
+  }
+  connects {
+    src_engine_id: 1003
+    src_port_id: 0
+    target_engine_id: 1005
+    target_port_id: 0
+  }
+  connects {
+    src_engine_id: 1005
+    src_port_id: 0
+    target_engine_id: 1001
+    target_port_id: 0
+  }
+}
