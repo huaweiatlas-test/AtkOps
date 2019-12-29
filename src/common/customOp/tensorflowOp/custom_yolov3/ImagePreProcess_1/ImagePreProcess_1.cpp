@@ -29,14 +29,14 @@ const static int DVPP_MULT_TWO = 2;
 #define CHECK_ODD(NUM)  (((NUM) % 2 != 0) ? (NUM) : ((NUM) - 1))
 #define CHECK_EVEN(NUM) (((NUM) % 2 == 0) ? (NUM) : ((NUM) - 1))
 ImagePreProcess_1::ImagePreProcess_1() 
-    : dvppConfig(NULL), 
-      dvppOut(NULL), 
-      dvppIn(NULL), 
-      dataInputIn(NULL), 
-      dvppCropIn(NULL), 
-      piDvppApi(NULL), 
-      imageFrameID(0), 
-      orderInFrame(0), 
+    : dvppConfig_(NULL), 
+      dvppOut_(NULL), 
+      dvppIn_(NULL), 
+      dataInputIn_(NULL), 
+      dvppCropIn_(NULL), 
+      piDvppApi_(NULL), 
+      imageFrameID_(0), 
+      orderInFrame_(0), 
       inputQue_(INPUT_SIZE) 
 {
 
@@ -44,9 +44,9 @@ ImagePreProcess_1::ImagePreProcess_1()
 
 ImagePreProcess_1::~ImagePreProcess_1()
 {
-    if (pidvppapi_ != NULL) {
-        DestroyDvppApi(pidvppapi_);
-        pidvppapi_ = NULL;
+    if (piDvppApi_ != NULL) {
+        DestroyDvppApi(piDvppApi_);
+        piDvppApi_ = NULL;
     }
     HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1]ImagePreProcess_1 Engine Destory");
 }
@@ -108,18 +108,18 @@ HIAI_StatusT ImagePreProcess_1::Init(const hiai::AIConfig &config,
 
     // check crop param
     if (NeedCrop()) {
-        if (dvppConfig->point_x > DVPP_SUPPORT_MAX_WIDTH - DVPP_SUPPORT_MIN_WIDTH - 1
-            || dvppConfig->crop_width > DVPP_SUPPORT_MAX_WIDTH
-            || dvppConfig->crop_width < DVPP_SUPPORT_MIN_WIDTH
-            || dvppConfig->point_y > DVPP_SUPPORT_MAX_HEIGHT - DVPP_SUPPORT_MIN_HEIGHT - 1
-            || dvppConfig->crop_height > DVPP_SUPPORT_MAX_HEIGHT
-            || dvppConfig->crop_height < DVPP_SUPPORT_MIN_HEIGHT) {
+        if (dvppConfig_->point_x > DVPP_SUPPORT_MAX_WIDTH - DVPP_SUPPORT_MIN_WIDTH - 1
+            || dvppConfig_->crop_width > DVPP_SUPPORT_MAX_WIDTH
+            || dvppConfig_->crop_width < DVPP_SUPPORT_MIN_WIDTH
+            || dvppConfig_->point_y > DVPP_SUPPORT_MAX_HEIGHT - DVPP_SUPPORT_MIN_HEIGHT - 1
+            || dvppConfig_->crop_height > DVPP_SUPPORT_MAX_HEIGHT
+            || dvppConfig_->crop_height < DVPP_SUPPORT_MIN_HEIGHT) {
             HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "crop param error");
             return HIAI_ERROR;
         }
     }
 
-    if (CreateDvppApi(pidvppapi_) != DVPP_SUCCESS) {
+    if (CreateDvppApi(piDvppApi_) != DVPP_SUCCESS) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]Create DVPP pidvppapi_ fail");
         return HIAI_ERROR;
     }
@@ -133,7 +133,7 @@ HIAI_StatusT ImagePreProcess_1::Init(const hiai::AIConfig &config,
 // 3. DVPP_CTL_VPC_PROC
 int ImagePreProcess_1::HandleJpeg(const ImageData<u_int8_t> &img)
 {
-    if (pidvppapi_ == NULL) {
+    if (piDvppApi_ == NULL) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1] pidvppapi_ is null!\n");
         return HIAI_ERROR;
     }
@@ -152,8 +152,8 @@ int ImagePreProcess_1::HandleJpeg(const ImageData<u_int8_t> &img)
     dvppApiCtlMsg.out = reinterpret_cast<void *>(&jpegdOutData);
     dvppApiCtlMsg.out_size = sizeof(struct JpegdOut);
 
-    if (0 != DvppCtl(piDvppApi, DVPP_CTL_JPEGD_PROC, &dvppApiCtlMsg)) {  // if this single jpeg pic is processed with error, return directly, and then process next pic if there any.
-        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1] JPEGDERROR, FrameID:%u", imageFrameID);
+    if (0 != DvppCtl(piDvppApi_, DVPP_CTL_JPEGD_PROC, &dvppApiCtlMsg)) {  // if this single jpeg pic is processed with error, return directly, and then process next pic if there any.
+        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1] JPEGDERROR, FrameID:%u", imageFrameID_);
         jpegdOutData.cbFree();  // release memory from caller.
         return HIAI_ERROR;
     }
@@ -170,18 +170,18 @@ int ImagePreProcess_1::HandleJpeg(const ImageData<u_int8_t> &img)
 
 int ImagePreProcess_1::UpdateCropPara(const Rectangle<Point2D> &rect)
 {
-    dvppConfig->point_x = reinterpret_cast<int>(rect.anchor_lt.x);
-    dvppConfig->point_y = reinterpret_cast<int>(rect.anchor_lt.y);
-    dvppConfig->crop_width = reinterpret_cast<int>(rect.anchor_rb.x - rect.anchor_lt.x);
-    dvppConfig->crop_height = reinterpret_cast<int>(rect.anchor_rb.y - rect.anchor_lt.y);
+    dvppConfig_->point_x = reinterpret_cast<int>(rect.anchor_lt.x);
+    dvppConfig_->point_y = reinterpret_cast<int>(rect.anchor_lt.y);
+    dvppConfig_->crop_width = reinterpret_cast<int>(rect.anchor_rb.x - rect.anchor_lt.x);
+    dvppConfig_->crop_height = reinterpret_cast<int>(rect.anchor_rb.y - rect.anchor_lt.y);
 
-    HIAI_ENGINE_LOG("[ImagePreProcess_1]: %d, %d, %d, %d", (*dvppConfig).point_x, (*dvppConfig).point_y,
-                    (*dvppConfig).crop_width, (*dvppConfig).crop_height);
+    HIAI_ENGINE_LOG("[ImagePreProcess_1]: %d, %d, %d, %d", (*dvppConfig_).point_x, (*dvppConfig_).point_y,
+                    (*dvppConfig_).crop_width, (*dvppConfig_).crop_height);
 
-    if (dvppConfig->point_x < 0
-        || dvppConfig->point_y < 0
-        || dvppConfig->crop_height <= 0
-        || dvppConfig->crop_width <= 0) {
+    if (dvppConfig_->point_x < 0
+        || dvppConfig_->point_y < 0
+        || dvppConfig_->crop_height <= 0
+        || dvppConfig_->crop_width <= 0) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]Some crop parms are invalid!");
         return HIAI_ERROR;
     }
@@ -195,8 +195,8 @@ bool ImagePreProcess_1::SendPreProcessData()
         return false;
     }
 
-    if (dvppOut->v_img.size() > 0) {
-        dvppOut->b_info.batch_size = dvppOut->v_img.size();
+    if (dvppOut_->v_img.size() > 0) {
+        dvppOut_->b_info.batch_size = dvppOut_->v_img.size();
         HIAI_StatusT hiaiRet = HIAI_OK;
         do {
             hiaiRet = SendData(0, "BatchImageParaWithScaleT", std::static_pointer_cast<void>(dvppOut_));
@@ -216,8 +216,8 @@ bool ImagePreProcess_1::SendPreProcessData()
 
 void ImagePreProcess_1::ClearData()
 {
-    dvppIn = NULL;
-    dvppOut = NULL;
+    dvppIn_ = NULL;
+    dvppOut_ = NULL;
 }
 
 // png pic process flow:
@@ -226,7 +226,7 @@ void ImagePreProcess_1::ClearData()
 // 3. DVPP_CTL_VPC_PROC
 int ImagePreProcess_1::HandlePng(const ImageData<u_int8_t> &img)
 {
-    if (pidvppapi_ == NULL) {
+    if (piDvppApi_ == NULL) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1] pidvppapi is null");
         return HIAI_ERROR;
     }
@@ -234,7 +234,7 @@ int ImagePreProcess_1::HandlePng(const ImageData<u_int8_t> &img)
     struct PngInputInfoAPI inputPngData;                                // input data
     inputPngData.inputData = reinterpret_cast<void *>(img.data.get());  // input data pointer addr
     inputPngData.inputSize = img.size;                                  // input data length
-    inputPngData.transformFlag = (*dvppConfig).transform_flag;          // whether to transform
+    inputPngData.transformFlag = (*dvppConfig_).transform_flag;          // whether to transform
 
     struct PngOutputInfoAPI outputPngData;  // output data
 
@@ -244,8 +244,8 @@ int ImagePreProcess_1::HandlePng(const ImageData<u_int8_t> &img)
     dvppApiCtlMsg.out = reinterpret_cast<void *>(&outputPngData);
     dvppApiCtlMsg.out_size = sizeof(struct PngOutputInfoAPI);
 
-    if (0 != DvppCtl(piDvppApi, DVPP_CTL_PNGD_PROC, &dvppApiCtlMsg)) {  // if this single jpeg pic is processed with error, return directly, and process next pic
-        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]PNGDERROR, FrameID:%u", imageFrameID);
+    if (0 != DvppCtl(piDvppApi_, DVPP_CTL_PNGD_PROC, &dvppApiCtlMsg)) {  // if this single jpeg pic is processed with error, return directly, and process next pic
+        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]PNGDERROR, FrameID:%u", imageFrameID_);
         if (outputPngData.address != NULL) {  // release memory from caller.
             munmap(outputPngData.address, ALIGN_UP(outputPngData.size + VPC_OUT_WIDTH_STRIDE, MAP_2M));
             outputPngData.address = NULL;
@@ -271,10 +271,10 @@ int ImagePreProcess_1::HandlePng(const ImageData<u_int8_t> &img)
 bool ImagePreProcess_1::NeedCrop()
 {
     bool crop = true;
-    if (dvppConfig->point_x == -1
-        || dvppConfig->point_y == -1
-        || dvppConfig->crop_width == -1
-        || dvppConfig->crop_height == -1) {
+    if (dvppConfig_->point_x == -1
+        || dvppConfig_->point_y == -1
+        || dvppConfig_->crop_width == -1
+        || dvppConfig_->crop_height == -1) {
         crop = false;
     }
     return crop;
@@ -288,23 +288,23 @@ bool ImagePreProcess_1::ProcessCrop(VpcUserCropConfigure &area, const int &width
     int rightOffset = realWidth - 1;            // the right side of the cropped image
     int upOffset = 0;                           // the top side of the cropped image
     uint32_t downOffset = realHeight - 1;       // the bottom side of the cropped image
-    int fixedWidth = dvppConfig->crop_width;    // the actual crop width
-    int fixedHeight = dvppConfig->crop_height;  // the actual crop height
+    int fixedWidth = dvppConfig_->crop_width;    // the actual crop width
+    int fixedHeight = dvppConfig_->crop_height;  // the actual crop height
 
     // user crop
     if (NeedCrop()) {
         HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1] User crop, System crop");
         // amend input offset to avoid the processed range to exceed real range of image
-        if ((dvppConfig->point_x + dvppConfig->crop_width) > realWidth) {
-            fixedWidth = realWidth - dvppConfig->point_x;
+        if ((dvppConfig_->point_x + dvppConfig_->crop_width) > realWidth) {
+            fixedWidth = realWidth - dvppConfig_->point_x;
         }
-        if ((dvppConfig->point_y + dvppConfig->crop_height) > realHeight) {
-            fixedHeight = realHeight - dvppConfig->point_y;
+        if ((dvppConfig_->point_y + dvppConfig_->crop_height) > realHeight) {
+            fixedHeight = realHeight - dvppConfig_->point_y;
         }
 
-        leftOffset = dvppConfig->point_x;
+        leftOffset = dvppConfig_->point_x;
         rightOffset = leftOffset + fixedWidth - 1;
-        upOffset = dvppConfig->point_y;
+        upOffset = dvppConfig_->point_y;
         downOffset = upOffset + fixedHeight - 1;
         HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1] leftOffset: %u, rightOffset: %u, upOffset: %u, downOffset: %u",
                         leftOffset, rightOffset, upOffset, downOffset);
@@ -405,7 +405,7 @@ int ImagePreProcess_1::HandleVpcWithParam(const unsigned char *buffer, const int
     HIAI_ENGINE_LOG("[ImagePreProcess_1] realWidth: %d, realHeight: %d, width: %d, height: %d", realWidth, realHeight,
                     width, height);
 
-    if (pidvppapi_ == NULL || buffer == NULL) {
+    if (piDvppApi_ == NULL || buffer == NULL) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]pidvppapi_ is null");
         return HIAI_ERROR;
     }
@@ -448,7 +448,7 @@ int ImagePreProcess_1::HandleVpcWithParam(const unsigned char *buffer, const int
     userImage.widthStride = width;
     userImage.heightStride = height;
     userImage.outputFormat = OUTPUT_YUV420SP_UV;
-    userImage.bareDataAddr = reinterpret_cast<uint8_t *>(buffer);
+    userImage.bareDataAddr = (uint8_t *)buffer;
     userImage.bareDataBufferSize = bufferSize;
 
     VpcUserRoiConfigure roiConfigure;
@@ -503,18 +503,18 @@ int ImagePreProcess_1::HandleVpcWithParam(const unsigned char *buffer, const int
     }
     userImage.roiConfigure = &roiConfigure;
 
-    if (!dvppConfig->dvpp_para.empty()) {
-        paraSetPath[0] += dvppConfig->dvpp_para.c_str();
+    if (!dvppConfig_->dvpp_para.empty()) {
+        paraSetPath[0] += dvppConfig_->dvpp_para.c_str();
         userImage.yuvScalerParaSetAddr = reinterpret_cast<uint64_t>(paraSetPath);
         userImage.yuvScalerParaSetSize = 1;
         userImage.yuvScalerParaSetIndex = 0;
-        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1_1]dvpp_para:%s", dvppConfig->dvpp_para.c_str());
+        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1_1]dvpp_para:%s", dvppConfig_->dvpp_para.c_str());
     }
 
     dvppapi_ctl_msg dvppApiCtlMsg;
     dvppApiCtlMsg.in = reinterpret_cast<void *>(&userImage);
     dvppApiCtlMsg.in_size = sizeof(VpcUserImageConfigure);
-    if (0 != DvppCtl(piDvppApi, DVPP_CTL_VPC_PROC, &dvppApiCtlMsg)) {
+    if (0 != DvppCtl(piDvppApi_, DVPP_CTL_VPC_PROC, &dvppApiCtlMsg)) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1] call dvppctl process:VPC faild");
         HIAI_DVPP_DFree(outputConfigure->addr);
         outputConfigure->addr = nullptr;
@@ -529,8 +529,8 @@ int ImagePreProcess_1::HandleVpcWithParam(const unsigned char *buffer, const int
             outputConfigure->addr = nullptr;
             return HIAI_ERROR;
         }
-        dvppOut->b_info = dvppIn->b_info;
-        dvppOut->b_info.frame_ID.clear();
+        dvppOut_->b_info = dvppIn_->b_info;
+        dvppOut_->b_info.frame_ID.clear();
     }
 
     std::shared_ptr<NewImageParaT> image = std::make_shared<NewImageParaT>();
@@ -548,12 +548,12 @@ int ImagePreProcess_1::HandleVpcWithParam(const unsigned char *buffer, const int
     image->img.format = img.format;
     image->scale_info.scale_width = (1.0 * image->img.width) / img.width;
     image->scale_info.scale_height = (1.0 * image->img.height) / img.height;
-    image->resize_info.resize_width = dvppConfig->resize_width;
-    image->resize_info.resize_height = dvppConfig->resize_height;
-    image->crop_info.point_x = dvppConfig->point_x;
-    image->crop_info.point_y = dvppConfig->point_y;
-    image->crop_info.crop_width = dvppConfig->crop_width;
-    image->crop_info.crop_height = dvppConfig->crop_height;
+    image->resize_info.resize_width = dvppConfig_->resize_width;
+    image->resize_info.resize_height = dvppConfig_->resize_height;
+    image->crop_info.point_x = dvppConfig_->point_x;
+    image->crop_info.point_y = dvppConfig_->point_y;
+    image->crop_info.crop_width = dvppConfig_->crop_width;
+    image->crop_info.crop_height = dvppConfig_->crop_height;
 
     uint8_t *tmp = nullptr;
     try {
@@ -578,8 +578,8 @@ int ImagePreProcess_1::HandleVpcWithParam(const unsigned char *buffer, const int
         return HIAI_ERROR;
     }
     image->img.data = outBuffer;
-    dvppOut->v_img.push_back(*image);
-    dvppOut->b_info.frame_ID.push_back(imageFrameID);
+    dvppOut_->v_img.push_back(*image);
+    dvppOut_->b_info.frame_ID.push_back(imageFrameID_);
 
     if (dvppConfig_->dump_value == 1) {
         HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1]preprocess need dump, width:%u, height:%u", image->img.width, image->img.height);
@@ -598,10 +598,10 @@ int ImagePreProcess_1::StorePreprocessImage(const u_int8_t *outBuffer, const uin
         return HIAI_ERROR;
     }
     // important:after dvpp, the output data is that width is aligned with 128, and height is aligned with 16.
-    std::string fileName = dvppConfig->userHome + "/projects/" + dvppConfig->project_name +
+    std::string fileName = dvppConfig_->userHome + "/projects/" + dvppConfig_->project_name +
                            "/out/PreProcess/ImagePreProcess_1/"
-                           + std::to_string(imageFrameID) + "_" + std::to_string(orderInFrame + 1) + "_preprocessYUV";
-    IDE_SESSION session = ideOpenFile(NULL, reinterpret_cast<char *>(fileName.c_str()));
+                           + std::to_string(imageFrameID_) + "_" + std::to_string(orderInFrame_ + 1) + "_preprocessYUV";
+    IDE_SESSION session = ideOpenFile(NULL, (char *)fileName.c_str());
     HIAI_ENGINE_LOG("save fileName:%s!", fileName.c_str());
     if (session == NULL) {
         HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]StorePreprocessImage, ideOpenFile is null!");
@@ -609,10 +609,14 @@ int ImagePreProcess_1::StorePreprocessImage(const u_int8_t *outBuffer, const uin
     }
 
     uint32_t sendSize = 0;
-    char *tmp = reinterpret_cast<char *>(outBuffer);
+    char *tmp = (char *)outBuffer;
     while (sendSize < size) {
         uint32_t everySize = (sendSize + SEND_BUFFER_SIZE > size)  ? (size - sendSize) : SEND_BUFFER_SIZE;
         if (ideWriteFile(session, tmp, everySize) != IDE_DAEMON_NONE_ERROR) {
+            HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[ImagePreProcess_1]StorePreProcessImage, ideWriteFile error!");
+            ideCloseFile(session);
+            return HIAI_ERROR;
+        }
         tmp += everySize;
         sendSize += everySize;
     }
@@ -724,55 +728,55 @@ HIAI_IMPL_ENGINE_PROCESS("ImagePreProcess_1", ImagePreProcess_1, INPUT_SIZE)
     if (arg0 != nullptr) {
         std::shared_ptr<BatchImageParaWithScaleT> dataInput = std::static_pointer_cast<BatchImageParaWithScaleT>(arg0);
         if (!IsSentinelImage(dataInput)) {
-            if (dataInputIn != nullptr) {
-                if (dataInputIn->b_info.batch_ID == dataInput->b_info.batch_ID && !dataInput->v_img.empty() &&
+            if (dataInputIn_ != nullptr) {
+                if (dataInputIn_->b_info.batch_ID == dataInput->b_info.batch_ID && !dataInput->v_img.empty() &&
                     !dataInput->b_info.frame_ID.empty()) {
-                    dataInputIn->v_img.push_back(dataInput->v_img[0]);
-                    dataInputIn->b_info.frame_ID.push_back(dataInput->b_info.frame_ID[0]);
+                    dataInputIn_->v_img.push_back(dataInput->v_img[0]);
+                    dataInputIn_->b_info.frame_ID.push_back(dataInput->b_info.frame_ID[0]);
                 }
             } else {
-                dataInputIn = std::make_shared<BatchImageParaWithScaleT>();
-                if (dataInputIn == nullptr) {
+                dataInputIn_ = std::make_shared<BatchImageParaWithScaleT>();
+                if (dataInputIn_ == nullptr) {
                     HIAI_ENGINE_LOG(HIAI_IDE_WARNING, "[ImagePreProcess_1] malloc error");
                     return HIAI_ERROR;
                 }
                 for (int i = 0; i < dataInput->b_info.frame_ID.size(); ++i) {
-                    dataInputIn->b_info.frame_ID.push_back(dataInput->b_info.frame_ID[i]);
+                    dataInputIn_->b_info.frame_ID.push_back(dataInput->b_info.frame_ID[i]);
                 }
-                dataInputIn->b_info.batch_size = dataInput->b_info.batch_size;
-                dataInputIn->b_info.max_batch_size = dataInput->b_info.max_batch_size;
-                dataInputIn->b_info.batch_ID = dataInput->b_info.batch_ID;
-                dataInputIn->b_info.is_first = dataInput->b_info.is_first;
-                dataInputIn->b_info.is_last = dataInput->b_info.is_last;
+                dataInputIn_->b_info.batch_size = dataInput->b_info.batch_size;
+                dataInputIn_->b_info.max_batch_size = dataInput->b_info.max_batch_size;
+                dataInputIn_->b_info.batch_ID = dataInput->b_info.batch_ID;
+                dataInputIn_->b_info.is_first = dataInput->b_info.is_first;
+                dataInputIn_->b_info.is_last = dataInput->b_info.is_last;
                 for (int i = 0; i < dataInput->v_img.size(); ++i) {
-                    dataInputIn->v_img.push_back(dataInput->v_img[i]);
+                    dataInputIn_->v_img.push_back(dataInput->v_img[i]);
                 }
             }
-            if (dataInputIn->v_img.size() != dataInputIn->b_info.batch_size) {
+            if (dataInputIn_->v_img.size() != dataInputIn_->b_info.batch_size) {
                 HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1] Wait for other %d batch image info!",
-                                (dataInputIn->b_info.batch_size - dataInputIn->v_img.size()));
+                                (dataInputIn_->b_info.batch_size - dataInputIn_->v_img.size()));
                 return HIAI_OK;
             }
-            inputQue_.PushData(0, dataInputIn);
-            dataInputIn = nullptr;
+            inputQue_.PushData(0, dataInputIn_);
+            dataInputIn_ = nullptr;
         } else {
             inputQue_.PushData(0, arg0);
         }
     }
 #if INPUT_SIZE == 2
     inputQue_.PushData(1, arg1);
-    if (!inputQue_.PopAllData(dvppIn, dvppCropIn)) {
+    if (!inputQue_.PopAllData(dvppIn_, dvppCropIn_)) {
         HIAI_ENGINE_LOG(HIAI_IDE_WARNING, "[ImagePreProcess_1]fail to pop all data");
         return HIAI_ERROR;
     }
 #else
-    if (!inputQue_.PopAllData(dvppIn)) {
+    if (!inputQue_.PopAllData(dvppIn_)) {
         HIAI_ENGINE_LOG(HIAI_IDE_WARNING, "[ImagePreProcess_1]fail to pop all data");
         return HIAI_ERROR;
     }
 #endif
     // add sentinel image for showing this data in dataset are all sended, this is last step.
-    if (IsSentinelImage(dvppIn)) {
+    if (IsSentinelImage(dvppIn_)) {
         HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[ImagePreProcess_1]sentinel Image, process over.");
         HIAI_StatusT hiaiRet = HIAI_OK;
         do {
@@ -790,7 +794,7 @@ HIAI_IMPL_ENGINE_PROCESS("ImagePreProcess_1", ImagePreProcess_1, INPUT_SIZE)
         return hiaiRet;
     }
 
-    dvppOut = NULL;
+    dvppOut_ = NULL;
 
     // 1.check the pending data is jpeg, png, yuv or none
     // 2.preprocess before vpc(DVPP_CTL_JPEGD_PROC, DVPP_CTL_PNGD_PROC, or something else)

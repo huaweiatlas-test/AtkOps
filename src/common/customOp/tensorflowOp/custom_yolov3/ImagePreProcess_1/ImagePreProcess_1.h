@@ -15,8 +15,8 @@
 #include "dvpp/Vpc.h"
 #include "BatchImageParaWithScale.h"
 
-const int INPUT_SIZE = 1
-const int OUTPUT_SIZE = 1
+#define INPUT_SIZE 1
+#define OUTPUT_SIZE 1
 const int IMAGE_ARRAY_LEN = 2;
 
 using hiai::Engine;
@@ -147,14 +147,14 @@ private:
     int UpdateCropPara(const Rectangle<Point2D> &rect);
 
 private:
-    std::shared_ptr<DvppConfig> dvppConfig;
-    std::shared_ptr<BatchImageParaWithScaleT> dvppOut;
-    std::shared_ptr<BatchImageParaWithScaleT> dvppIn;
-    std::shared_ptr<BatchImageParaWithScaleT> dataInputIn;
-    std::shared_ptr<BatchDetectedObjectPara<Rectangle<Point2D>, float>> dvppCropIn;
-    IDVPPAPI *piDvppApi;
-    uint32_t imageFrameID;
-    uint32_t orderInFrame;  // multi net for mark order from one image cutout
+    std::shared_ptr<DvppConfig> dvppConfig_;
+    std::shared_ptr<BatchImageParaWithScaleT> dvppOut_;
+    std::shared_ptr<BatchImageParaWithScaleT> dvppIn_;
+    std::shared_ptr<BatchImageParaWithScaleT> dataInputIn_;
+    std::shared_ptr<BatchDetectedObjectPara<Rectangle<Point2D>, float>> dvppCropIn_;
+    IDVPPAPI *piDvppApi_;
+    uint32_t imageFrameID_;
+    uint32_t orderInFrame_;  // multi net for mark order from one image cutout
     hiai::MultiTypeQueue inputQue_;
 };
 
