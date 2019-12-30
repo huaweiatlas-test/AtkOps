@@ -92,7 +92,7 @@ The following describes the process of using modules (1) to (5).
 
 Modules (1) to (5) are independent of each other. You can use some or all of them as required. If you only want to develop operators, go to the second module: operator project and plug-in generation module.
 
-You need to set the environment variables for the five modules. That is, change the value of DDK_PATH in the config.json file to the installed DDK, and then run the following command:
+You need to set the environment variables for the five modules. That is, change the value of DDK_PATH in the config.json file to the installed DDK path, and then run the following command:
 
 ```bash
 source env.conf

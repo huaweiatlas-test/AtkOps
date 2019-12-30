@@ -89,7 +89,7 @@ jq, tensorflow / caffe, make, cmake, python2
 
 （1）~（5）模块之间相对独立，用户可以根据实际需要使用其中的一部分或者全部都使用。如果只开发算子，可直接跳到第二个模块: 算子工程与插件生成模块。
 
-这五个模块都需要首先设置环境变量，即首先修改config.json中的DDK_PATH字段为安装好的ddk，然后执行
+这五个模块都需要首先设置环境变量，即首先修改config.json中的DDK_PATH字段为安装好的ddk路径，然后执行
 
 ```bash
 source env.conf
