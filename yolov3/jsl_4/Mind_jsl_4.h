@@ -102,14 +102,14 @@ private:
     * @[out]: imgData, the point of data image
     * @[return]: HIAI_StatusT
     */
-    HIAI_StatusT makeImageInfo(NewImageParaT* imgData, int index);
+    HIAI_StatusT MakeImageInfo(NewImageParaT* imgData, int index);
     
     /**
     * @brief: convert image info to EvbImageInfo
     * @[in]: index, index of image in dataset_info_
     * @[return]: shared_ptr<EvbImageInfo>, if null, means error
     */
-    shared_ptr<EvbImageInfo> makeEvbImageInfo(int index);
+    shared_ptr<EvbImageInfo> MakeEvbImageInfo(int index);
 
     /**
     * @brief: get the frame id

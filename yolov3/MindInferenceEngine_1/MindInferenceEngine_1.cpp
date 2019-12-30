@@ -219,21 +219,15 @@ HIAI_StatusT MindInferenceEngine_1::SendSentinelImage()
     tran_data->b_info = image_handle->b_info;
     HIAI_StatusT hiaiRet = HIAI_OK;
     do {
-        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        sentinel image, process
-                                        success!");
+        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] sentinel image, process success!");
         hiaiRet = SendData(0, "EngineTransT", std::static_pointer_cast<void>(tran_data));
         if (hiaiRet != HIAI_OK) {
             if (hiaiRet == HIAI_ENGINE_NULL_POINTER || hiaiRet == HIAI_HDC_SEND_MSG_ERROR || hiaiRet == HIAI_HDC_SEND_ERROR 
                 || hiaiRet == HIAI_GRAPH_SRC_PORT_NOT_EXIST || hiaiRet == HIAI_GRAPH_ENGINE_NOT_EXIST) {
-                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        SendData error[%d],
-                                        break.", hiaiRet);
+                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] SendData error[%d], break.", hiaiRet);
                 break;
             }
-            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        SendData return value[%d] not OK, sleep
-                                        200ms", hiaiRet);
+            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] SendData return value[%d] not OK, sleep 200ms", hiaiRet);
             usleep(SEND_DATA_INTERVAL_MS);
         }
     } while (hiaiRet != HIAI_OK);
@@ -253,24 +247,18 @@ HIAI_StatusT MindInferenceEngine_1::PrepareInputBuffer(uint8_t *input_buffer, co
     // 1.prepare input buffer for each batch
     // the loop for each image
     if (input_buffer ==  nullptr) {
-        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        ERROR, input_buffer is
-                                        nullptr");
+        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] ERROR, input_buffer is nullptr");
         return HIAI_ERROR;
     }
     for (int j = 0; j < batch_size; j++) {
         if (batchBegin + j < imageNumber) {
             if (memcpy_s(input_buffer + j * image_size, image_size, image_handle->v_img[batchBegin + j].img.data.get(), image_size)) {
-                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        ERROR, copy image buffer
-                                        failed");
+                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] ERROR, copy image buffer failed");
                 return HIAI_ERROR;
             }
         } else {
             if (memset_s(input_buffer + j * image_size, image_size, static_cast<char>(0), image_size)) {
-                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        ERROR, batch padding for image data
-                                        failed");
+                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] ERROR, batch padding for image data failed");
                 return HIAI_ERROR;
             }
         }
@@ -294,25 +282,17 @@ HIAI_StatusT MindInferenceEngine_1::PrepareInforInput(uint8_t *input_buffer2, co
         if (batchBegin + j < imageNumber) {
             hiai::RawDataBuffer _input_arg_2 = multi_input_2->v_info[batchBegin + j];
             eachSize = _input_arg_2.len_of_byte;
-            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        info each input size:
-                                        %d", eachSize);
+            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] info each input size: %d", eachSize);
             if (memcpy_s(input_buffer2 + j * eachSize, eachSize, _input_arg_2.data.get(), eachSize)) {
-                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        ERROR, copy info buffer
-                                        failed");
+                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] ERROR, copy info buffer failed");
                 return HIAI_ERROR;
             }
         } else {
             float info_tmp[ARRAY_NUM] = { 0.0, 0.0, 0.0 };
             eachSize = sizeof(info_tmp);
-            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        info padding size:
-                                        %d", eachSize);
+            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] info padding size: %d", eachSize);
             if (memcpy_s(input_buffer2 + j*eachSize, eachSize, info_tmp, eachSize)) {
-                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        ERROR, padding info buffer
-                                        failed");
+                HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] ERROR, padding info buffer failed");
                 return HIAI_ERROR;
             }
         }
@@ -468,8 +448,7 @@ HIAI_StatusT MindInferenceEngine_1::Predict()
             offset = i * result_tensor->GetSize() / batch;
             ret = memcpy_s(singleResult + idx, result_tensor->GetSize() / batch, result_tensor->GetBuffer() + offset, result_tensor->GetSize() / batch);
             if (ret) {
-                HIAI_ENGINE_LOG("memcpy_s
-                                        failed! ");
+                HIAI_ENGINE_LOG("memcpy_s failed! ");
                 delete [] singleResult;
                 singleResult = NULL;
                 return HIAI_ERROR;
@@ -479,15 +458,11 @@ HIAI_StatusT MindInferenceEngine_1::Predict()
         
         detectBox = m_yolo->process(reinterpret_cast<float*>(singleResult), singleSize, height, width, &boxNum);
 
-        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "boxNum
-                                        : %d", boxNum);
-        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "detectBox2:
-                                        %x", detectBox);
+        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "boxNum: %d", boxNum);
+        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "detectBox2: %x", detectBox);
         
         for (int i = 0; i < boxNum; ++i) {
-            HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "box_%d
-                                        : x:%f, y:%f, width:%f, height:%f, label:%d,
-                                        prob:%f", i, detectBox[i].x, detectBox[i].y, detectBox[i].width, detectBox[i].height, detectBox[i].class_id, detectBox[i].prob);
+            HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "box_%d: x:%f, y:%f, width:%f, height:%f, label:%d, prob:%f", i, detectBox[i].x, detectBox[i].y, detectBox[i].width, detectBox[i].height, detectBox[i].class_id, detectBox[i].prob);
         }
 
         if (detectBox == NULL) {
@@ -536,16 +511,13 @@ HIAI_StatusT MindInferenceEngine_1::Predict()
 HIAI_StatusT MindInferenceEngine_1::SetOutputStruct(const int batchBegin)
 {
     for (unsigned int i = 0; i < output_data_vec.size(); ++i) {
-        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        build: %d", i);
+        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] build: %d", i);
         std::shared_ptr<hiai::AINeuralNetworkBuffer> result_tensor = std::static_pointer_cast<hiai::AINeuralNetworkBuffer>(output_data_vec[i]);
         auto tensor_size = result_tensor->GetSize();
         if (memcpy_s(tran_data->output_data_vec[i].data.get() + batchBegin / batch_size * tensor_size, tensor_size, result_tensor->GetBuffer(), tensor_size)) {
             return HIAI_ERROR;
         }
-        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        build: %d, number:
-                                        %d", tensor_size, batchBegin / batch_size * tensor_size);
+        HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] build: %d, number: %d", tensor_size, batchBegin / batch_size * tensor_size);
     }
     return HIAI_OK;
 }
@@ -559,16 +531,12 @@ void MindInferenceEngine_1::SendResult()
     do {
         hiaiRet = SendData(0, "EngineTransT", std::static_pointer_cast<void>(tran_data));
         if (hiaiRet == HIAI_QUEUE_FULL) {
-            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1]
-                                        queue full, sleep
-                                        200ms");
+            HIAI_ENGINE_LOG(HIAI_IDE_INFO, "[MindInferenceEngine_1] queue full, sleep 200ms");
             usleep(200000);
         }
     } while (hiaiRet == HIAI_QUEUE_FULL);
     if (hiaiRet != HIAI_OK) {
-        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1]
-                                        SendData failed! error code:
-                                        %d", hiaiRet);
+        HIAI_ENGINE_LOG(HIAI_IDE_ERROR, "[MindInferenceEngine_1] SendData failed! error code: %d", hiaiRet);
     }
 }
 
@@ -694,17 +662,12 @@ HIAI_IMPL_ENGINE_PROCESS("MindInferenceEngine_1", MindInferenceEngine_1, INPUT_S
     int imageNumber = image_handle->v_img.size();
 #if (INPUT_SIZE == 3)
     if (nullptr == _multi_input_2) {
-        HandleExceptions("[MindInferenceEngine_1]
-                                            fail to process invalid
-                                            message");
+        HandleExceptions("[MindInferenceEngine_1] fail to process invalid message");
         return HIAI_ERROR;
     }
     int info_number = _multi_input_2->v_info.size();
     if (info_number != imageNumber) {
-        HandleExceptions("[MindInferenceEngine_1]
-                                            ERROR the number of image data and
-                                            information data
-                                            doesn't match!");
+        HandleExceptions("[MindInferenceEngine_1] ERROR the number of image data and information data doesn't match!");
     }
     int _input_buffer2_size = sizeof(float) * IMAGE_INFO_DATA_NUM * batch_size;
     uint8_t * _input_buffer2 = nullptr;

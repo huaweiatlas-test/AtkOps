@@ -5,7 +5,8 @@
 #include <dirent.h>
 #include <regex>
 #include <fcntl.h>
-const int DOT_LENGTH 3 const int DOTDOT_LENGTH 6
+const int DOT_LENGTH = 3;
+const int DOTDOT_LENGTH = 6;
 /**
 * @brief: get a list of valid files under the directory
 * @[in]: directory, the directory path
